@@ -53,13 +53,23 @@ if (DEMO) {
     // Mỗi phiếu là 1 tài liệu votes/<uid>_<mã>; luật Firestore cấm ghi đè nên mỗi cô chỉ được 1 phiếu.
     vote: (uid, code) => F.setDoc(F.doc(db, "votes", uid + "_" + code), { uid, teacher: code, at: F.serverTimestamp() }),
     // 18 lệnh đếm (mỗi lệnh tốn ít nhất 1 lượt đọc); tổng = cộng các cô, không đếm riêng nữa.
-    async counts() {
+    // Mỗi cô đếm riêng, lỗi thì thử lại 2 lần; vẫn lỗi thì giữ số cũ (prev) thay vì bỏ cả lượt.
+    async counts(prev = {}) {
       const col = F.collection(db, "votes");
       const named = T.filter(t => t.name);
-      const res = await Promise.all(named.map(t => F.getCountFromServer(F.query(col, F.where("teacher", "==", t.code)))));
+      const one = async code => {
+        for (let i = 0; i < 3; i++) {
+          try { return (await F.getCountFromServer(F.query(col, F.where("teacher", "==", code)))).data().count; }
+          catch (e) { await new Promise(r => setTimeout(r, 800 * (i + 1))); }
+        }
+        return typeof prev[code] === "number" ? prev[code] : null;
+      };
+      const vals = await Promise.all(named.map(t => one(t.code)));
+      if (vals.every(v => v === null)) throw new Error("counts unavailable");
       const c = {}; let total = 0;
-      named.forEach((t, i) => { c[t.code] = res[i].data().count; total += c[t.code]; });
-      return { c, total };
+      named.forEach((t, i) => { c[t.code] = vals[i]; total += vals[i] || 0; }); // null = chưa đếm được
+      const partial = vals.some(v => v === null);
+      return { c, total: partial ? null : total, partial };
     },
   };
 }
@@ -70,7 +80,7 @@ let toastTimer;
 function toast(msg) { const t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => t.hidden = true, 3200); }
 function banner(html, err) { const b = $("#banner"); if (!html) { b.hidden = true; return; } b.innerHTML = html; b.className = "banner" + (err ? " err" : ""); b.hidden = false; }
 const inApp = /FBAN|FBAV|FB_IAB|Instagram|Zalo|Messenger|Line\//i.test(navigator.userAgent);
-const fmt = n => S.known ? n.toLocaleString("vi-VN") : "–"; // chưa đọc được số phiếu thì hiện "–", không hiện 0
+const fmt = n => S.known && typeof n === "number" ? n.toLocaleString("vi-VN") : "–"; // chưa đọc được số phiếu thì hiện "–", không hiện 0
 
 const voteLabel = code => S.mine.has(code) ? "✓ Đã bình chọn" : "Bình chọn";
 
@@ -86,7 +96,7 @@ function renderGrid() {
   if ($("#sort").value === "votes") list = [...list].sort((a, b) => (S.counts[b.code] || 0) - (S.counts[a.code] || 0));
   const rk = rankMap();
   $("#grid").innerHTML = list.length ? list.map(t => {
-    const mine = S.mine.has(t.code), n = S.counts[t.code] || 0;
+    const mine = S.mine.has(t.code), n = S.counts[t.code];
     return `<article class="card${mine ? " mine" : ""}${t.name ? "" : " empty"}">
       <button class="thumb" data-open="${t.code}" aria-label="Xem bài dự thi ${esc(label(t))}">
         <img src="${photo(t.code, 1)}" alt="${esc(label(t))}" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'ph',textContent:'Ảnh đang cập nhật'}))">
@@ -149,7 +159,7 @@ function renderModal() {
   $("#mCls").textContent = t.cls ? "Giáo viên chủ nhiệm lớp " + t.cls : "";
   $("#mTitle").textContent = t.title || "";
   $("#mMsg").innerHTML = t.message ? t.message.split("\n").filter(Boolean).map(p => `<p>${esc(p)}</p>`).join("") : "<p>Bài dự thi đang được cập nhật.</p>";
-  $("#mVotes").textContent = fmt(S.counts[t.code] || 0);
+  $("#mVotes").textContent = fmt(S.counts[t.code]);
   const b = $("#mVote"); const mine = S.mine.has(t.code);
   b.className = "vote big" + (mine ? " on" : "");
   b.dataset.vote = t.code;
@@ -176,9 +186,10 @@ async function refreshCounts(force) {
   if (!force && Date.now() - lastFetch < REFRESH_MS) return;
   fetching = true;
   try {
-    const { c, total } = await api.counts();
-    S.counts = c; S.total = total; S.known = true; S.countErr = false; lastFetch = Date.now();
-    try { localStorage.setItem(CACHE_KEY, JSON.stringify({ c, total, at: lastFetch })); } catch {}
+    const { c, total, partial } = await api.counts(S.known ? S.counts : {});
+    S.counts = c; S.total = total; S.known = true; S.countErr = !!partial;
+    lastFetch = partial ? Date.now() - REFRESH_MS + 20 * 1000 : Date.now(); // thiếu số cô nào thì 20 giây sau đếm lại
+    if (!partial) try { localStorage.setItem(CACHE_KEY, JSON.stringify({ c, total, at: lastFetch })); } catch {}
   } catch (e) {
     console.error(e); S.countErr = true; lastFetch = Date.now(); // chờ hết chu kỳ rồi mới thử lại
   } finally { fetching = false; renderAll(); }
@@ -193,7 +204,7 @@ async function vote(code) {
   try {
     await api.vote(S.user.uid, code);
     S.mine.add(code);
-    S.counts[code] = (S.counts[code] || 0) + 1; S.total++;
+    if (typeof S.counts[code] === "number") S.counts[code]++; if (typeof S.total === "number") S.total++;
     const left = T.filter(x => x.name && !S.mine.has(x.code)).length;
     toast(`Cảm ơn bạn đã bình chọn cho cô ${t.name}!` + (left ? ` Bạn còn ${left} cô chưa chọn.` : " Bạn đã chọn đủ 18 cô."));
   } catch (e) {
