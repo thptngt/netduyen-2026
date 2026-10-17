@@ -38,7 +38,8 @@ button{cursor:pointer}
 .hero h1{font-family:var(--display);font-weight:900;font-size:clamp(38px,7vw,76px);line-height:1.02;margin:0;text-wrap:balance;color:#3a1446}
 .hero h1 em{color:#c2307a;font-style:italic}
 .hero h1 .script{font-family:"Great Vibes","Playfair Display",cursive;font-weight:400;font-size:1.45em;line-height:.9;letter-spacing:0;color:#5a1f6e;display:inline-block;padding:.08em .1em 0 0}
-.lede{max-width:58ch;margin:16px 0 0;color:#4f2a5c;font-size:16px}
+.lede{max-width:58ch;margin:16px 0 0;color:#4f2a5c;font-family:"Lora",Georgia,"Times New Roman",serif;font-style:italic;font-weight:400;font-size:18px;line-height:1.6}
+.lede b{font-weight:500;color:#c2307a}
 .stats{display:flex;flex-wrap:wrap;gap:12px 40px;margin-top:26px}
 .stats div{display:flex;flex-direction:column}
 .stats b{font-family:var(--display);font-size:34px;line-height:1;font-variant-numeric:tabular-nums;color:#3a1446}
