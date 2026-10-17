@@ -82,12 +82,12 @@ button{cursor:pointer}
 
 /* Biểu tượng cánh vàng: máy tính đặt ở 1/3 bên phải banner; màn hình nhỏ đặt phía trên tiêu đề */
 .hero-in{position:relative}
-.emblem{display:block;height:150px;width:auto;margin:0 0 6px;filter:drop-shadow(0 0 18px rgba(255,255,255,.7))}
+.emblem{display:block;height:160px;width:auto;margin:0 0 6px;filter:drop-shadow(0 6px 14px rgba(90,40,10,.25))}
 @media (min-width:1024px){
   .emblem{position:absolute;right:0;top:50%;transform:translateY(-50%);width:33%;max-width:400px;height:auto;margin:0;pointer-events:none}
   .hero-in > :not(.emblem){max-width:66%}
 }
-@media (max-width:720px){.emblem{margin:0 auto 4px;height:140px}}
+@media (max-width:720px){.emblem{margin:0 auto 4px;height:170px}}
 
 /* Điện thoại: căn giữa toàn bộ nội dung banner */
 @media (max-width:720px){
