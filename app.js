@@ -52,15 +52,14 @@ if (DEMO) {
     },
     // Mỗi phiếu là 1 tài liệu votes/<uid>_<mã>; luật Firestore cấm ghi đè nên mỗi cô chỉ được 1 phiếu.
     vote: (uid, code) => F.setDoc(F.doc(db, "votes", uid + "_" + code), { uid, teacher: code, at: F.serverTimestamp() }),
+    // 18 lệnh đếm (mỗi lệnh tốn ít nhất 1 lượt đọc); tổng = cộng các cô, không đếm riêng nữa.
     async counts() {
       const col = F.collection(db, "votes");
       const named = T.filter(t => t.name);
-      const res = await Promise.all([
-        F.getCountFromServer(col),
-        ...named.map(t => F.getCountFromServer(F.query(col, F.where("teacher", "==", t.code)))),
-      ]);
-      const c = {}; named.forEach((t, i) => c[t.code] = res[i + 1].data().count);
-      return { c, total: res[0].data().count };
+      const res = await Promise.all(named.map(t => F.getCountFromServer(F.query(col, F.where("teacher", "==", t.code)))));
+      const c = {}; let total = 0;
+      named.forEach((t, i) => { c[t.code] = res[i].data().count; total += c[t.code]; });
+      return { c, total };
     },
   };
 }
@@ -71,7 +70,7 @@ let toastTimer;
 function toast(msg) { const t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => t.hidden = true, 3200); }
 function banner(html, err) { const b = $("#banner"); if (!html) { b.hidden = true; return; } b.innerHTML = html; b.className = "banner" + (err ? " err" : ""); b.hidden = false; }
 const inApp = /FBAN|FBAV|FB_IAB|Instagram|Zalo|Messenger|Line\//i.test(navigator.userAgent);
-const fmt = n => n.toLocaleString("vi-VN");
+const fmt = n => S.known ? n.toLocaleString("vi-VN") : "–"; // chưa đọc được số phiếu thì hiện "–", không hiện 0
 
 const voteLabel = code => S.mine.has(code) ? "✓ Đã bình chọn" : "Bình chọn";
 
@@ -112,6 +111,7 @@ function renderAuth() {
 }
 function renderStats() {
   $("#sTotal").textContent = fmt(S.total);
+  const nb = $("#countNote"); if (nb) nb.hidden = !S.countErr;
   $("#sCount").textContent = T.length;
   const mineEl = $("#sMine"); if (mineEl) mineEl.textContent = `${S.mine.size}/${T.filter(t => t.name).length}`;
   renderClock();
@@ -163,9 +163,25 @@ async function signIn() {
   if (inApp) { banner("Facebook/Zalo không cho đăng nhập Google trong ứng dụng. Bấm <b>⋯</b> rồi chọn <b>Mở bằng trình duyệt</b> (Chrome/Safari) để bình chọn.", true); window.scrollTo({ top: 0, behavior: "smooth" }); return; }
   try { await api.signIn(); } catch (e) { toast("Không đăng nhập được. Hãy thử lại."); console.error(e); }
 }
-async function refreshCounts() {
-  try { const { c, total } = await api.counts(); S.counts = c; S.total = total; renderAll(); }
-  catch (e) { console.error(e); }
+/* Đếm phiếu tiết kiệm lượt đọc Firebase:
+   - chỉ đếm lại khi trang đang mở trên màn hình và đã quá REFRESH_MS kể từ lần trước;
+   - lưu kết quả gần nhất vào máy người xem để lần sau mở trang hiện ngay, không phải đọc lại;
+   - nếu Firebase tạm từ chối (hết hạn mức), giữ số cũ, không bao giờ hiện 0. */
+const REFRESH_MS = 5 * 60 * 1000;
+const CACHE_KEY = "voteCounts_v1";
+let lastFetch = 0, fetching = false;
+try { const c = JSON.parse(localStorage.getItem(CACHE_KEY)); if (c?.c) { S.counts = c.c; S.total = c.total; S.known = true; lastFetch = c.at || 0; } } catch {}
+async function refreshCounts(force) {
+  if (fetching || document.hidden) return;
+  if (!force && Date.now() - lastFetch < REFRESH_MS) return;
+  fetching = true;
+  try {
+    const { c, total } = await api.counts();
+    S.counts = c; S.total = total; S.known = true; S.countErr = false; lastFetch = Date.now();
+    try { localStorage.setItem(CACHE_KEY, JSON.stringify({ c, total, at: lastFetch })); } catch {}
+  } catch (e) {
+    console.error(e); S.countErr = true; lastFetch = Date.now(); // chờ hết chu kỳ rồi mới thử lại
+  } finally { fetching = false; renderAll(); }
 }
 let pendingVote = null;
 async function vote(code) {
@@ -184,11 +200,11 @@ async function vote(code) {
     console.error(e);
     if (e?.code === "permission-denied") {
       // Ghi đè bị luật chặn = đã có phiếu (vd. bầu ở thiết bị khác) hoặc ngoài giờ.
-      const again = await api.myVotes(S.user.uid).catch(() => []);
-      if (again.includes(code)) { S.mine.add(code); toast(`Bạn đã bình chọn cho cô ${t.name} rồi.`); }
-      else toast("Không ghi nhận được: ngoài thời gian bình chọn hoặc tài khoản không hợp lệ.");
+      // Trong giờ bình chọn, luật chỉ chặn khi phiếu cho cô này đã tồn tại → coi như đã bầu.
+      S.mine.add(code);
+      toast(`Bạn đã bình chọn cho cô ${t.name} rồi. Mỗi cô chỉ được chọn 1 lần.`);
     } else toast("Lỗi kết nối, hãy thử lại.");
-  } finally { S.busy.delete(code); renderAll(); setTimeout(refreshCounts, 1500); }
+  } finally { S.busy.delete(code); renderAll(); }
 }
 function openModal(code) {
   S.open = code; S.idx = 0; renderModal(); $("#modal").hidden = false; document.body.style.overflow = "hidden";
@@ -234,8 +250,9 @@ api.onAuth(async u => {
     if (pendingVote) { const c = pendingVote; pendingVote = null; vote(c); }
   }
 });
-refreshCounts();
-setInterval(refreshCounts, 60000);
+refreshCounts(Date.now() - lastFetch > 60 * 1000); // mở lại trang trong vòng 1 phút thì dùng số đã lưu
+setInterval(() => refreshCounts(), 30 * 1000);       // chỉ thực sự đếm khi đã quá 5 phút
+document.addEventListener("visibilitychange", () => refreshCounts());
 setInterval(renderClock, 1000);
 const h = location.hash.slice(1).toUpperCase();
 if (T.some(t => t.code === h)) openModal(h);
