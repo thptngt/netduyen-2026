@@ -18,9 +18,9 @@ button{cursor:pointer}
 
 /* hero */
 .hero{color:#fff;background:
-  radial-gradient(1200px 400px at 85% -10%,rgba(217,164,65,.35),transparent 60%),
-  radial-gradient(800px 500px at -10% 120%,rgba(255,255,255,.08),transparent 60%),
-  linear-gradient(160deg,var(--rose) 0%,var(--rose-deep) 70%);
+  radial-gradient(900px 380px at 88% -10%,rgba(255,182,224,.45),transparent 60%),
+  radial-gradient(800px 500px at -10% 120%,rgba(255,255,255,.10),transparent 60%),
+  linear-gradient(120deg,#e0428f 0%,#c13caf 38%,#8a3fc7 70%,#5b2fa8 100%);
   position:relative;overflow:hidden}
 .hero::after{content:"";position:absolute;inset:auto 0 0 0;height:6px;background:linear-gradient(90deg,var(--gold),#f3d48a,var(--gold))}
 .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;padding-block:14px;flex-wrap:wrap}
