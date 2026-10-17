@@ -35,10 +35,17 @@ button{cursor:pointer}
 .btn-out{background:rgba(255,255,255,.5);border:1.5px solid #9b5bb8;color:#5a2470;border-radius:99px;padding:5px 12px;font-size:13px}
 .hero-in{padding-block:28px 44px}
 .kicker{margin:0 0 10px;text-transform:uppercase;letter-spacing:.14em;font-size:12.5px;font-weight:600;color:#8a3a8f}
-.hero h1{font-family:var(--display);font-weight:900;font-size:clamp(38px,7vw,76px);line-height:1.02;margin:0;text-wrap:balance;color:#3a1446}
-.hero h1 em{color:#c2307a;font-style:italic}
-.hero h1 .script{font-family:"Great Vibes","Playfair Display",cursive;font-weight:400;font-size:1.45em;line-height:.9;letter-spacing:0;color:#5a1f6e;display:inline-block;padding:.08em .1em 0 0}
-.lede{max-width:58ch;margin:16px 0 0;color:#4f2a5c;font-family:"Lora",Georgia,"Times New Roman",serif;font-style:italic;font-weight:400;font-size:18px;line-height:1.6}
+/* Chữ 3D: viền sáng phía trên-trái + các lớp "khối" lệch xuống-phải + bóng mềm phía xa */
+.hero h1{font-family:var(--display);font-weight:900;font-size:clamp(38px,7vw,76px);line-height:1.02;margin:0;text-wrap:balance;color:#3a1446;
+  text-shadow:-1px -1px 0 rgba(255,255,255,.85),1px 1px 0 #c9a9d9,2px 2px 0 #b994cc,3px 3px 0 #a880bf,4px 4px 0 #9670b0,6px 8px 14px rgba(58,20,70,.35)}
+.hero h1 em{color:#c2307a;font-style:italic;
+  text-shadow:-1px -1px 0 rgba(255,255,255,.85),1px 1px 0 #f0a8c8,2px 2px 0 #e592b8,3px 3px 0 #d87ca8,4px 4px 0 #c86898,6px 8px 14px rgba(120,20,70,.32)}
+.hero h1 .script{font-family:"Great Vibes","Playfair Display",cursive;font-weight:400;font-size:1.45em;line-height:.9;letter-spacing:0;color:#5a1f6e;display:inline-block;padding:.08em .1em 0 0;
+  text-shadow:-1px -1px 0 rgba(255,255,255,.9),1px 1px 0 #c9a9d9,2px 2px 0 #b48fca,3px 3px 0 #9d78b8,5px 7px 12px rgba(58,20,70,.35)}
+.kicker{text-shadow:0 1px 0 rgba(255,255,255,.8)}
+.lede{max-width:min(100%,800px);margin:16px 0 0;color:#4f2a5c;font-family:"Lora",Georgia,"Times New Roman",serif;font-style:italic;font-weight:400;font-size:18px;line-height:1.6;
+  text-shadow:0 1px 0 rgba(255,255,255,.75),0 2px 6px rgba(58,20,70,.12)}
+.stats b{text-shadow:-1px -1px 0 rgba(255,255,255,.85),1px 1px 0 #c9a9d9,2px 2px 0 #a880bf,4px 5px 10px rgba(58,20,70,.3)}
 .lede b{font-weight:500;color:#c2307a}
 .stats{display:flex;flex-wrap:wrap;gap:12px 40px;margin-top:26px}
 .stats div{display:flex;flex-direction:column}
