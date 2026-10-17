@@ -115,11 +115,19 @@ function renderStats() {
   $("#sCount").textContent = T.length;
   $("#sMineBox").hidden = !S.user;
   $("#sMine").textContent = `${S.mine.size}/${T.filter(t => t.name).length}`;
+  renderClock();
+}
+let lastPhase = phase();
+function renderClock() {
   const p = phase(), now = Date.now();
-  const ms = p === "before" ? START - now : p === "open" ? END - now : 0;
-  const d = Math.floor(ms / 864e5), h = Math.floor(ms / 36e5) % 24, m = Math.floor(ms / 6e4) % 60;
-  $("#sTime").textContent = p === "after" ? "Đã kết thúc" : d > 0 ? `${d} ngày ${h} giờ` : `${h} giờ ${m} phút`;
-  $("#sTimeLbl").textContent = p === "before" ? "đến khi mở bình chọn" : p === "open" ? "thời gian còn lại" : "cuộc bình chọn";
+  // Hết giờ (hoặc vừa mở) thì vẽ lại toàn trang để khóa/mở nút bình chọn
+  if (p !== lastPhase) { lastPhase = p; return renderAll(); }
+  const ms = Math.max(0, p === "before" ? START - now : p === "open" ? END - now : 0);
+  const d = Math.floor(ms / 864e5), h = Math.floor(ms / 36e5) % 24, m = Math.floor(ms / 6e4) % 60, s = Math.floor(ms / 1e3) % 60;
+  const pad = n => String(n).padStart(2, "0");
+  const hms = `${pad(h)}:${pad(m)}:${pad(s)}`;
+  $("#sTime").textContent = p === "after" ? "Đã kết thúc" : d > 0 ? `${d} ngày ${hms}` : hms;
+  $("#sTimeLbl").textContent = p === "before" ? "đến khi mở bình chọn (giờ : phút : giây)" : p === "open" ? "thời gian còn lại (giờ : phút : giây)" : "cuộc bình chọn";
 }
 function renderModal() {
   const t = T.find(x => x.code === S.open); if (!t) return;
@@ -219,6 +227,6 @@ api.onAuth(async u => {
 });
 refreshCounts();
 setInterval(refreshCounts, 60000);
-setInterval(renderStats, 30000);
+setInterval(renderClock, 1000);
 const h = location.hash.slice(1).toUpperCase();
 if (T.some(t => t.code === h)) openModal(h);
