@@ -5,7 +5,8 @@ const DEMO = !CFG.apiKey || CFG.apiKey.startsWith("YOUR_");
 const T = window.TEACHERS;
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-const photo = (code, i) => `images/${code}-${i}.jpg`;
+const IMG_VER = 2; // tăng số này khi thay ảnh để trình duyệt tải ảnh mới
+const photo = (code, i) => `images/${code}-${i}.jpg?v=${IMG_VER}`;
 const label = t => t.name || "Đang cập nhật";
 
 const S = { user: null, mine: new Set(), counts: {}, total: 0, busy: new Set(), open: null, idx: 0 };

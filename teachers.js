@@ -1,7 +1,6 @@
-// Danh sách thí sinh, lấy từ các bài dự thi trên Facebook của trường (17/10/2026).
+// Danh sách thí sinh. Thông điệp lấy từ các bài dự thi trên Facebook của trường;
+// mã, họ tên, lớp và ảnh theo thư mục Google Drive "ẢNH BÌNH CHỌN GV 20/10" của trường (17/10/2026).
 // Ảnh đặt trong thư mục images/ theo tên: <mã>-1.jpg, <mã>-2.jpg, <mã>-3.jpg (ảnh 1 là ảnh đại diện).
-// LƯU Ý: Trên Facebook, bài của cô Lê Thị Ngọc Hoa ghi nhầm mã NGT003 (trùng cô Phạm Thị Vân Anh)
-// và không có bài nào mang mã NGT004. Tạm xếp cô Ngọc Hoa là NGT004. Cần xác nhận lại với trường.
 window.TEACHERS = [
   {
     code: "NGT001", name: "Nguyễn Phương Thảo", cls: "10A1",
@@ -18,15 +17,15 @@ Không cần hơn ai cả. Chỉ cần hôm nay tốt hơn mình của ngày hô
 Nhân ngày 20/10, chúc tất cả những người phụ nữ luôn xinh đẹp theo cách riêng, đủ bình an, đủ mạnh mẽ và luôn được yêu thương, trân trọng.`
   },
   {
-    code: "NGT003", name: "Phạm Thị Vân Anh", cls: "10A4",
+    code: "NGT003", name: "Lê Thị Ngọc Hoa", cls: "10A3",
+    message: `“Học tập là hạt giống của kiến thức, kiến thức là hạt giống của hạnh phúc.” Trên hành trình đưa đò, tôi luôn tin rằng mỗi bài học trao đi là một mầm xanh hạnh phúc được gieo vào tương lai của các em học sinh.
+Chúc một nửa thế giới ngày 20/10 luôn rạng rỡ, ngập tràn niềm vui và gặt hái được nhiều đóa hoa hạnh phúc. Chúc cuộc thi thành công tốt đẹp!`
+  },
+  {
+    code: "NGT004", name: "Phạm Thị Vân Anh", cls: "10A4",
     message: `Nghề giáo là hành trình của tri thức, trách nhiệm và yêu thương. Mỗi người thầy, người cô không chỉ trao kiến thức mà còn đồng hành, khơi dậy tiềm năng và vun đắp những ước mơ trong mỗi học sinh.
 Giáo dục là gieo những hạt mầm tốt đẹp cho tương lai; là hành trình bền bỉ kiến tạo những thế hệ sống có tri thức, nhân cách và khát vọng cống hiến.
 Dạy bằng tri thức – Đồng hành bằng yêu thương.`
-  },
-  {
-    code: "NGT004", name: "Lê Thị Ngọc Hoa", cls: "12A3",
-    message: `“Học tập là hạt giống của kiến thức, kiến thức là hạt giống của hạnh phúc.” Trên hành trình đưa đò, tôi luôn tin rằng mỗi bài học trao đi là một mầm xanh hạnh phúc được gieo vào tương lai của các em học sinh.
-Chúc một nửa thế giới ngày 20/10 luôn rạng rỡ, ngập tràn niềm vui và gặt hái được nhiều đóa hoa hạnh phúc. Chúc cuộc thi thành công tốt đẹp!`
   },
   {
     code: "NGT005", name: "Trịnh Thị Phương Liên", cls: "10A6",
@@ -36,7 +35,7 @@ Với tôi, giáo dục là hành trình gieo những hạt mầm yêu thương,
 Nhân ngày 20/10, chúc các cô giáo luôn bình an, vững vàng và giữ mãi ngọn lửa yêu nghề. Mong mỗi ngày hôm nay đều là một món quà, để chúng ta tiếp tục gieo yêu thương và làm nên những điều tốt đẹp cho ngày mai.`
   },
   {
-    code: "NGT006", name: "Lê Thanh Quý", cls: "10A8",
+    code: "NGT006", name: "Lê Thị Thanh Quý", cls: "10A8",
     message: `Tôi là người sống khá đơn giản, thích đi du lịch, xem phim, đọc truyện và tận hưởng những niềm vui nho nhỏ của cuộc sống. Phong cách sống của tôi là sự tối giản, ít thôi nhưng phải chất, đơn giản thôi nhưng nhất định phải đẹp! Tôi tin rằng hạnh phúc không nằm ở việc có thật nhiều, mà ở khả năng biết đủ với những gì mình đang có. Bởi khi biết đủ, ngày thường cũng hóa thành ngày vui, những điều bình dị cũng trở nên đáng yêu. Với tôi, cuộc sống là một hành trình để trải nghiệm, khám phá và tận hưởng, chứ không phải cuộc đua để về đích. Cứ sống tử tế, giữ cho tâm hồn một chút hài hước, đôi mắt biết thưởng thức cái đẹp và trái tim biết trân trọng những điều giản dị — thế là đủ để mỗi ngày đều có lý do để mỉm cười.
 Và nếu mọi người cũng có chút yêu thương dành cho tôi, đừng ngần ngại bình chọn và chia sẻ bài viết nhé! Để tôi có thể cảm nhận được tình cảm, sự yêu mến và những điều dễ thương mà mọi người dành cho mình. Bởi đôi khi, chỉ một lượt tương tác nhỏ thôi cũng đủ khiến một ngày trở nên vui vẻ và ấm áp hơn rất nhiều!`
   },
