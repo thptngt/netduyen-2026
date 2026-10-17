@@ -29,7 +29,10 @@ button{cursor:pointer}
 @media (max-width:520px){.school{font-size:13px}.school img{width:36px;height:36px}}
 .auth{display:flex;align-items:center;gap:10px;font-size:14px}
 .auth img{width:30px;height:30px;border-radius:50%;border:2px solid #fff}
-.auth .who{max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mine-chip{background:rgba(255,255,255,.6);border:1.5px solid #c98fd6;color:#5a2470;border-radius:99px;padding:3px 10px;font-size:13px;white-space:nowrap}
+.mine-chip b{font-family:"Montserrat",sans-serif;font-weight:800;color:#c2307a}
+.auth{flex-wrap:wrap;justify-content:center}
+.auth .who{color:#3a1446;font-weight:600;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .btn-g{display:inline-flex;align-items:center;gap:8px;background:#fff;color:#3c4043;border:0;border-radius:99px;padding:8px 16px;font-weight:600;box-shadow:0 2px 6px rgba(0,0,0,.2)}
 .btn-g svg{width:18px;height:18px}
 .btn-out{background:rgba(255,255,255,.5);border:1.5px solid #9b5bb8;color:#5a2470;border-radius:99px;padding:5px 12px;font-size:13px}
@@ -45,27 +48,30 @@ button{cursor:pointer}
 .kicker{text-shadow:0 1px 0 rgba(255,255,255,.8)}
 .lede{max-width:min(100%,800px);margin:16px 0 0;color:#4f2a5c;font-family:"Lora",Georgia,"Times New Roman",serif;font-style:italic;font-weight:400;font-size:18px;line-height:1.6;
   text-shadow:0 1px 0 rgba(255,255,255,.75),0 2px 6px rgba(58,20,70,.12)}
-.stats b{text-shadow:-1px -1px 0 rgba(255,255,255,.8),1px 1px 0 #c9a9d9,2px 3px 5px rgba(58,20,70,.16)}
 .lede b{font-weight:500;color:#c2307a}
-.stats{display:flex;flex-wrap:wrap;gap:12px 40px;margin-top:26px}
-.stats div{display:flex;flex-direction:column}
-.stats b{font-family:"Montserrat","Be Vietnam Pro",Arial,sans-serif;font-weight:800;font-size:34px;line-height:1;font-variant-numeric:tabular-nums;color:#3a1446}
-.stats span{font-size:13px;color:#7a4a88}
+
+/* Hàng số liệu: lưới 3 cột (lượt bình chọn | thí sinh | đồng hồ) × 3 hàng (tiêu đề | số | nhãn).
+   Mọi con số dùng chung --num để cùng cỡ; nhãn của số thống kê thẳng hàng với nhãn Giờ/Phút/Giây. */
+.metrics{--num:clamp(22px,6vw,64px);--padY:clamp(5px,1.2vw,12px);--lg:clamp(6px,1.4vw,16px);
+  display:grid;grid-template-columns:repeat(3,auto);justify-content:start;align-items:center;column-gap:clamp(12px,3vw,44px);row-gap:8px;margin-top:24px;padding-bottom:clamp(22px,3vw,34px);max-width:100%}
+.m-c1{grid-column:1}.m-c2{grid-column:2}
+.m-num{grid-row:2;justify-self:center;font-family:"Montserrat","Be Vietnam Pro",Arial,sans-serif;font-weight:800;font-size:var(--num);line-height:1.05;font-variant-numeric:tabular-nums;color:#3a1446;
+  text-shadow:-1px -1px 0 rgba(255,255,255,.8),1px 1px 0 #c9a9d9,2px 3px 5px rgba(58,20,70,.16)}
+.m-lbl{grid-row:3;align-self:start;justify-self:center;margin-top:calc(var(--lg) - var(--padY) - 5px - 8px);font-family:"Montserrat",sans-serif;font-weight:500;font-size:clamp(11px,1.5vw,16px);color:#3a1446;white-space:nowrap}
 
 /* Đồng hồ đếm ngược: khung viền chuyển màu, số đậm, nhãn bên dưới */
-.cd{margin-top:22px;display:inline-flex;flex-direction:column;gap:8px;max-width:100%}
-.cd-title{margin:0;font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#7a4a88}
-.cd-box{position:relative;display:flex;align-items:flex-start;gap:clamp(4px,1.2vw,12px);padding:clamp(6px,1.2vw,12px) clamp(14px,2.4vw,26px);margin-bottom:30px;
+.cd{display:contents}
+.cd-title{grid-column:3;grid-row:1;margin:0;white-space:nowrap;font-size:clamp(11px,1.3vw,13px);font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#7a4a88}
+.cd-box{grid-column:3;grid-row:2;position:relative;display:flex;align-items:flex-start;gap:clamp(3px,1.2vw,12px);padding:var(--padY) clamp(10px,2.4vw,26px);
   border:5px solid transparent;border-radius:22px;
   background:linear-gradient(#1c0f2e,#1c0f2e) padding-box,linear-gradient(90deg,#e0428f,#8a3fc7 55%,#3b82f6) border-box;
   box-shadow:0 8px 24px rgba(58,20,70,.25)}
 .cd-seg{position:relative;display:flex;flex-direction:column;align-items:center}
 .cd-seg b,.cd-colon{font-family:"Montserrat","Be Vietnam Pro",Arial,sans-serif;font-weight:800;font-style:normal;color:#fff;
-  font-size:clamp(36px,7vw,64px);line-height:1.05;font-variant-numeric:tabular-nums;letter-spacing:.01em}
+  font-size:var(--num);line-height:1.05;font-variant-numeric:tabular-nums;letter-spacing:.01em}
 .cd-colon{opacity:.9;transform:translateY(-.06em)}
-.cd-seg span{position:absolute;top:calc(100% + clamp(10px,1.6vw,18px));font-family:"Montserrat",sans-serif;font-weight:500;font-size:clamp(12px,1.6vw,16px);color:#3a1446;white-space:nowrap}
-.cd-end{margin:0;font-family:"Montserrat",sans-serif;font-weight:800;color:#fff;font-size:clamp(24px,4vw,36px);padding-block:6px}
-.cd.ended .cd-box{margin-bottom:0}
+.cd-seg span{position:absolute;top:calc(100% + var(--lg));font-family:"Montserrat",sans-serif;font-weight:500;font-size:clamp(11px,1.5vw,16px);color:#3a1446;white-space:nowrap}
+.cd-end{margin:0;font-family:"Montserrat",sans-serif;font-weight:800;color:#fff;font-size:var(--num);line-height:1.05;white-space:nowrap}
 /* 60 phút cuối: chuyển đỏ và nhấp nháy */
 .cd.urgent .cd-box{background:linear-gradient(#2a0610,#2a0610) padding-box,linear-gradient(90deg,#ff2d55,#ff5a3c,#ff2d55) border-box;animation:cdPulse 1s ease-in-out infinite}
 .cd.urgent .cd-seg b,.cd.urgent .cd-colon{color:#ff3b4e;animation:cdBlink 1s steps(1,end) infinite}
@@ -80,9 +86,8 @@ button{cursor:pointer}
   .school{justify-content:center}
   .hero-in{text-align:center}
   .lede{margin-inline:auto}
-  .stats{justify-content:center}
-  .stats div{align-items:center}
-  .cd{align-items:center}
+  .metrics{justify-content:center}
+  .cd-title{justify-self:center}
 }
 
 /* filters */
