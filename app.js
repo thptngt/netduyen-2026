@@ -125,9 +125,19 @@ function renderClock() {
   const ms = Math.max(0, p === "before" ? START - now : p === "open" ? END - now : 0);
   const d = Math.floor(ms / 864e5), h = Math.floor(ms / 36e5) % 24, m = Math.floor(ms / 6e4) % 60, s = Math.floor(ms / 1e3) % 60;
   const pad = n => String(n).padStart(2, "0");
-  const hms = `${pad(h)}:${pad(m)}:${pad(s)}`;
-  $("#sTime").textContent = p === "after" ? "Đã kết thúc" : d > 0 ? `${d} ngày ${hms}` : hms;
-  $("#sTimeLbl").textContent = p === "before" ? "đến khi mở bình chọn (giờ : phút : giây)" : p === "open" ? "thời gian còn lại (giờ : phút : giây)" : "cuộc bình chọn";
+  const cd = $("#cd"), ended = p === "after";
+  cd.classList.toggle("ended", ended);
+  cd.classList.toggle("urgent", p === "open" && ms <= 36e5); // 60 phút cuối
+  for (const el of cd.querySelectorAll(".cd-seg, .cd-colon")) el.hidden = ended;
+  $("#cdEnd").hidden = !ended;
+  if (!ended) {
+    $("#cdDaySeg").hidden = $("#cdDayColon").hidden = d === 0;
+    $("#cdD").textContent = d;
+    $("#cdH").textContent = pad(h);
+    $("#cdM").textContent = pad(m);
+    $("#cdS").textContent = pad(s);
+  }
+  $("#sTimeLbl").textContent = p === "before" ? "Còn lại đến khi mở bình chọn" : p === "open" ? "Thời gian bình chọn còn lại" : "Cuộc bình chọn";
 }
 function renderModal() {
   const t = T.find(x => x.code === S.open); if (!t) return;

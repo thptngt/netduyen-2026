@@ -52,6 +52,28 @@ button{cursor:pointer}
 .stats b{font-family:var(--display);font-size:34px;line-height:1;font-variant-numeric:tabular-nums;color:#3a1446}
 .stats span{font-size:13px;color:#7a4a88}
 
+/* Đồng hồ đếm ngược: khung viền chuyển màu, số đậm, nhãn bên dưới */
+.cd{margin-top:22px;display:inline-flex;flex-direction:column;gap:8px;max-width:100%}
+.cd-title{margin:0;font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#7a4a88}
+.cd-box{position:relative;display:flex;align-items:flex-start;gap:clamp(4px,1.2vw,12px);padding:clamp(6px,1.2vw,12px) clamp(14px,2.4vw,26px);margin-bottom:30px;
+  border:5px solid transparent;border-radius:22px;
+  background:linear-gradient(#1c0f2e,#1c0f2e) padding-box,linear-gradient(90deg,#e0428f,#8a3fc7 55%,#3b82f6) border-box;
+  box-shadow:0 8px 24px rgba(58,20,70,.25)}
+.cd-seg{position:relative;display:flex;flex-direction:column;align-items:center}
+.cd-seg b,.cd-colon{font-family:"Montserrat","Be Vietnam Pro",Arial,sans-serif;font-weight:800;font-style:normal;color:#fff;
+  font-size:clamp(36px,7vw,64px);line-height:1.05;font-variant-numeric:tabular-nums;letter-spacing:.01em}
+.cd-colon{opacity:.9;transform:translateY(-.06em)}
+.cd-seg span{position:absolute;top:calc(100% + clamp(10px,1.6vw,18px));font-family:"Montserrat",sans-serif;font-weight:500;font-size:clamp(12px,1.6vw,16px);color:#3a1446;white-space:nowrap}
+.cd-end{margin:0;font-family:"Montserrat",sans-serif;font-weight:800;color:#fff;font-size:clamp(24px,4vw,36px);padding-block:6px}
+.cd.ended .cd-box{margin-bottom:0}
+/* 60 phút cuối: chuyển đỏ và nhấp nháy */
+.cd.urgent .cd-box{background:linear-gradient(#2a0610,#2a0610) padding-box,linear-gradient(90deg,#ff2d55,#ff5a3c,#ff2d55) border-box;animation:cdPulse 1s ease-in-out infinite}
+.cd.urgent .cd-seg b,.cd.urgent .cd-colon{color:#ff3b4e;animation:cdBlink 1s steps(1,end) infinite}
+.cd.urgent .cd-title{color:#d0142c}
+@keyframes cdBlink{0%{opacity:1}50%{opacity:.25}}
+@keyframes cdPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,45,85,.55)}50%{box-shadow:0 0 0 10px rgba(255,45,85,0)}}
+@media (prefers-reduced-motion:reduce){.cd.urgent .cd-box,.cd.urgent .cd-seg b,.cd.urgent .cd-colon{animation:none}}
+
 /* filters */
 main{padding-block:28px 48px}
 .banner{border-radius:12px;padding:12px 16px;margin-bottom:18px;background:var(--gold-soft);color:#5b3d06;font-size:14px}

@@ -12,8 +12,8 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta property="og:image" content="logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Lora:ital,wght@1,400;1,500&family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="style.css?v=8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@500;800&family=Lora:ital,wght@1,400;1,500&family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="style.css?v=9">
 </head>
 <body>
 <header class="hero">
@@ -29,7 +29,19 @@
       <div><b id="sTotal">–</b><span>lượt bình chọn</span></div>
       <div><b id="sCount">18</b><span>thí sinh</span></div>
       <div id="sMineBox" hidden><b id="sMine">0/18</b><span>cô bạn đã chọn</span></div>
-      <div><b id="sTime">–</b><span id="sTimeLbl">thời gian còn lại</span></div>
+    </div>
+    <div class="cd" id="cd" aria-live="off">
+      <p class="cd-title" id="sTimeLbl">Thời gian bình chọn còn lại</p>
+      <div class="cd-box">
+        <div class="cd-seg" id="cdDaySeg" hidden><b id="cdD">0</b><span>Ngày</span></div>
+        <i class="cd-colon" id="cdDayColon" hidden>:</i>
+        <div class="cd-seg"><b id="cdH">00</b><span>Giờ</span></div>
+        <i class="cd-colon">:</i>
+        <div class="cd-seg"><b id="cdM">00</b><span>Phút</span></div>
+        <i class="cd-colon">:</i>
+        <div class="cd-seg"><b id="cdS">00</b><span>Giây</span></div>
+        <p class="cd-end" id="cdEnd" hidden>Đã kết thúc</p>
+      </div>
     </div>
   </div>
 </header>
@@ -77,6 +89,6 @@
 <!-- Sửa file nào thì tăng số v= của file đó để khách thấy bản mới ngay -->
 <script src="firebase-config.js?v=5"></script>
 <script src="teachers.js?v=5"></script>
-<script type="module" src="app.js?v=6"></script>
+<script type="module" src="app.js?v=7"></script>
 </body>
 </html>
