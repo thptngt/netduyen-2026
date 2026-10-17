@@ -9,5 +9,5 @@ window.FIREBASE_CONFIG = {
 // Thời gian bình chọn (giờ Việt Nam). Nhớ sửa cùng mốc trong luật Firestore.
 window.CONTEST = {
   start: "2026-10-17T09:00:00+07:00",
-  end:   "2026-10-20T23:59:00+07:00",
+  end:   "2026-10-18T17:00:00+07:00",
 };
