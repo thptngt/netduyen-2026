@@ -37,6 +37,7 @@ button{cursor:pointer}
 .kicker{margin:0 0 10px;text-transform:uppercase;letter-spacing:.14em;font-size:12.5px;font-weight:600;color:#8a3a8f}
 .hero h1{font-family:var(--display);font-weight:900;font-size:clamp(38px,7vw,76px);line-height:1.02;margin:0;text-wrap:balance;color:#3a1446}
 .hero h1 em{color:#c2307a;font-style:italic}
+.hero h1 .script{font-family:"Great Vibes","Playfair Display",cursive;font-weight:400;font-size:1.45em;line-height:.9;letter-spacing:0;color:#5a1f6e;display:inline-block;padding:.08em .1em 0 0}
 .lede{max-width:58ch;margin:16px 0 0;color:#4f2a5c;font-size:16px}
 .stats{display:flex;flex-wrap:wrap;gap:12px 40px;margin-top:26px}
 .stats div{display:flex;flex-direction:column}
