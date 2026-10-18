@@ -75,7 +75,9 @@ if (DEMO) {
 }
 
 /* ---------------- helpers ---------------- */
-const phase = () => { const n = Date.now(); return n < START ? "before" : n > END ? "after" : "open"; };
+// Xem thử giao diện "đã kết thúc" (pháo hoa) — CHỈ chạy trên máy (localhost) với ?xemthu=ketthuc, web thật không bị ảnh hưởng
+const PREVIEW_END = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) && /[?&]xemthu=ketthuc/.test(location.search);
+const phase = () => { if (PREVIEW_END) return "after"; const n = Date.now(); return n < START ? "before" : n > END ? "after" : "open"; };
 let toastTimer;
 function toast(msg) { const t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => t.hidden = true, 3200); }
 function banner(html, err) { const b = $("#banner"); if (!html) { b.hidden = true; return; } b.innerHTML = html; b.className = "banner" + (err ? " err" : ""); b.hidden = false; }
@@ -97,10 +99,10 @@ function renderGrid() {
   const rk = rankMap();
   $("#grid").innerHTML = list.length ? list.map(t => {
     const mine = S.mine.has(t.code), n = S.counts[t.code];
-    return `<article class="card${mine ? " mine" : ""}${t.name ? "" : " empty"}">
+    return `<article class="card${mine ? " mine" : ""}${t.name ? "" : " empty"}${phase() === "after" && rk[t.code] ? " winner w" + rk[t.code] : ""}" data-code="${t.code}">
       <button class="thumb" data-open="${t.code}" aria-label="Xem bài dự thi ${esc(label(t))}">
         <img src="${photo(t.code, 1)}" alt="${esc(label(t))}" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'ph',textContent:'Ảnh đang cập nhật'}))">
-        <span class="badge">${t.code}</span>${mine ? '<span class="mine-tag">Bạn đã chọn</span>' : ""}${rk[t.code] ? `<span class="rank">Top ${rk[t.code]}</span>` : ""}
+        <span class="badge">${t.code}</span>${mine ? '<span class="mine-tag">Bạn đã chọn</span>' : ""}${rk[t.code] ? `<span class="rank r${rk[t.code]}">Top ${rk[t.code]}</span>` : ""}
       </button>
       <div class="ci">
         <h3><button data-open="${t.code}">${esc(label(t))}</button></h3>
@@ -108,6 +110,106 @@ function renderGrid() {
         <div class="row"><button class="vote${mine ? " on" : ""}" data-vote="${t.code}" ${t.name && phase() === "open" ? "" : "disabled"}><b>${fmt(n)}</b> ${voteLabel(t.code)}</button></div>
       </div></article>`;
   }).join("") : `<p style="grid-column:1/-1;text-align:center;color:var(--muted)">Không tìm thấy thí sinh phù hợp.</p>`;
+  celebrate();
+}
+
+/* ---------------- pháo hoa sau khi khóa bình chọn ----------------
+   Banner: pháo hoa nhiều màu hồng - tím - vàng phía sau chữ.
+   Top 3: mỗi thẻ một màu pháo hoa riêng — vàng kim (Top 1), bạc (Top 2), đồng (Top 3). */
+const FX_COLORS = {
+  hero: ["#ffffff", "#c8ffd9", "#ffd27a", "#ff7ac8", "#c8a2ff", "#8ff3ff"],
+  1: ["#ffd54a", "#fff2b0", "#ffc107"],
+  2: ["#ffffff", "#dfe8f2", "#c7d4e2"],
+  3: ["#ff9a5a", "#ffc59a", "#ff7a3d"],
+};
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+class Fireworks {
+  // Pháo hoa mô phỏng thật (như video bắn pháo hoa đêm): pháo bay lên rồi nổ, hạt có trọng lực và lực cản,
+  // để lại vệt sáng; nhiều quả nổ cùng lúc; các kiểu nổ: bông cúc trắng sáng, bông màu, liễu vàng rơi lấp lánh.
+  constructor(host, colors, opts = {}) {
+    this.host = host; this.colors = colors;
+    this.o = Object.assign({ every: 1100, salvo: [1, 3], size: 1, fade: .17 }, opts);
+    this.c = document.createElement("canvas"); this.c.className = "fx"; this.c.setAttribute("aria-hidden", "true");
+    host.prepend(this.c); this.x = this.c.getContext("2d");
+    this.r = []; this.p = []; this.last = -1e9; this.alive = true;
+    this.fit = () => { const dpr = Math.min(devicePixelRatio || 1, 2), b = host.getBoundingClientRect();
+      this.w = b.width; this.h = b.height; this.c.width = b.width * dpr; this.c.height = b.height * dpr; this.x.setTransform(dpr, 0, 0, dpr, 0, 0); };
+    this.fit(); this.ro = new ResizeObserver(this.fit); this.ro.observe(host);
+    this.tick = this.tick.bind(this); requestAnimationFrame(this.tick);
+  }
+  pick() { return this.colors[(Math.random() * this.colors.length) | 0]; }
+  // quầng sáng tròn vẽ sẵn cho mỗi màu
+  halo(col) {
+    const H = Fireworks.halos || (Fireworks.halos = {});
+    if (!H[col]) { const s = document.createElement("canvas"); s.width = s.height = 32; const g = s.getContext("2d");
+      const rg = g.createRadialGradient(16, 16, 0, 16, 16, 16); rg.addColorStop(0, col); rg.addColorStop(1, col + "00");
+      g.fillStyle = rg; g.fillRect(0, 0, 32, 32); H[col] = s; }
+    return H[col];
+  }
+  salvo() {
+    const k = this.o.salvo[0] + ((Math.random() * (this.o.salvo[1] - this.o.salvo[0] + 1)) | 0);
+    for (let i = 0; i < k; i++) setTimeout(() => this.alive && this.launch(), i * (120 + Math.random() * 260));
+  }
+  launch() {
+    const s = Math.max(.6, Math.min(1.4, Math.sqrt(this.h / 300))) * this.o.size;
+    this.r.push({ x: this.w * (.12 + Math.random() * .76), y: this.h + 4, vx: (Math.random() - .5) * 1.2,
+      vy: -(5.2 + Math.random() * 1.8) * s, ty: this.h * (.12 + Math.random() * .38), s });
+  }
+  explode(rk) {
+    const type = Math.random(), s = rk.s, col = this.pick();
+    const add = (n, sp0, sp1, o) => { for (let i = 0; i < n; i++) { const a = Math.random() * 6.283, sp = (sp0 + Math.random() * (sp1 - sp0)) * s;
+      this.p.push(Object.assign({ x: rk.x, y: rk.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1, ph: Math.random() * 6.28 }, o())); } };
+    if (type < .45) {            // bông cúc: lõi trắng sáng chuyển dần sang màu
+      add(110, 1.2, 4.2, () => ({ col, hot: true, decay: .012 + Math.random() * .01, drag: .975, g: .045, sz: 1.5 }));
+    } else if (type < .75) {     // bông màu 2 lớp
+      const col2 = this.pick();
+      add(80, 2.6, 4.2, () => ({ col, decay: .014 + Math.random() * .01, drag: .972, g: .045, sz: 1.6 }));
+      add(45, .8, 2, () => ({ col: col2, decay: .02 + Math.random() * .01, drag: .97, g: .04, sz: 1.4 }));
+    } else {                     // liễu vàng: hạt sống lâu, rơi chậm, lấp lánh
+      add(90, 1, 3.4, () => ({ col: "#ffd27a", decay: .006 + Math.random() * .004, drag: .965, g: .028, sz: 1.3, glitter: true }));
+    }
+  }
+  tick(now) {
+    if (!this.alive) return;
+    requestAnimationFrame(this.tick);
+    if (document.hidden) return;
+    const x = this.x;
+    x.globalCompositeOperation = "destination-out"; x.globalAlpha = 1; x.fillStyle = `rgba(0,0,0,${this.o.fade})`; x.fillRect(0, 0, this.w, this.h); // để lại vệt sáng
+    x.globalCompositeOperation = "lighter";                                                                                            // ánh sáng cộng dồn như pháo thật
+    if (now - this.last > this.o.every * (.6 + Math.random() * .8)) { this.last = now; this.salvo(); }
+    // pháo đang bay lên + tàn lửa đuôi
+    for (let i = this.r.length - 1; i >= 0; i--) {
+      const r = this.r[i]; r.x += r.vx; r.y += r.vy; r.vy += .06;
+      x.globalAlpha = 1; x.fillStyle = "#fff4d6"; x.beginPath(); x.arc(r.x, r.y, 1.6, 0, 6.283); x.fill();
+      if (Math.random() < .8) this.p.push({ x: r.x, y: r.y + 2, vx: (Math.random() - .5) * .6, vy: Math.random() * .8, life: .5, decay: .05, col: "#ffcf8a", drag: .95, g: .02, sz: 1 });
+      if (r.y <= r.ty || r.vy >= -.5) { this.explode(r); this.r.splice(i, 1); }
+    }
+    // hạt pháo
+    for (let i = this.p.length - 1; i >= 0; i--) {
+      const p = this.p[i]; p.vx *= p.drag; p.vy = p.vy * p.drag + p.g; p.x += p.vx; p.y += p.vy; p.life -= p.decay;
+      if (p.life <= 0) { this.p.splice(i, 1); continue; }
+      let a = Math.min(1, p.life * 1.6);
+      if (p.glitter) a *= Math.random() < .35 ? 1 : .25;                        // liễu vàng nhấp nháy
+      else if (p.life < .35) a *= .5 + .5 * Math.sin(now / 45 + p.ph);           // lấp lánh khi tàn
+      const col = p.hot && p.life > .7 ? "#ffffff" : p.col;                       // lõi trắng lúc mới nổ
+      x.globalAlpha = a * .35; x.drawImage(this.halo(col), p.x - 6 * p.sz, p.y - 6 * p.sz, 12 * p.sz, 12 * p.sz);
+      x.globalAlpha = a; x.fillStyle = col; x.beginPath(); x.arc(p.x, p.y, p.sz, 0, 6.283); x.fill();
+    }
+    x.globalAlpha = 1; x.globalCompositeOperation = "source-over";
+  }
+  stop() { this.alive = false; this.ro.disconnect(); this.c.remove(); }
+}
+let heroFx = null, cardFx = [], sortedOnce = false;
+function celebrate() {
+  const ended = phase() === "after" && S.known && !reduceMotion;
+  for (const f of cardFx) f.stop(); cardFx = [];
+  if (!ended) { if (heroFx) { heroFx.stop(); heroFx = null; $(".hero").classList.remove("night"); } return; }
+  if (!sortedOnce) { sortedOnce = true; if ($("#sort").value !== "votes") { $("#sort").value = "votes"; return renderGrid(); } }
+  if (!heroFx) heroFx = new Fireworks($(".hero"), FX_COLORS.hero, { every: 1300, salvo: [2, 4], size: 1 }); $(".hero").classList.add("night");
+  for (const card of document.querySelectorAll(".card.winner")) {
+    const rk = card.classList.contains("w1") ? 1 : card.classList.contains("w2") ? 2 : 3;
+    cardFx.push(new Fireworks(card, FX_COLORS[rk], { every: rk === 1 ? 1300 : 1700, salvo: [1, 2], size: .8, fade: .2 }));
+  }
 }
 function renderAuth() {
   const a = $("#auth");
