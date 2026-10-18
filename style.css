@@ -116,6 +116,47 @@ button{cursor:pointer}
 .hero.night .btn-out{background:rgba(255,255,255,.12);color:#fff;border-color:#c9a8ff}
 .hero.night .auth .who{color:#fff}
 
+/* Khung vinh danh Top 3 (tùy chọn): vàng kim · bạc · đồng */
+/* Bục vinh danh Top 3 (sau khi khóa bình chọn) */
+.podium{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,290px));justify-content:center;align-items:end;gap:28px 56px;padding:34px 0 28px;margin-bottom:12px;
+  border-bottom:2px dashed var(--line)}
+.podium [data-place="1"]{order:2;transform:translateY(-26px)}
+.podium [data-place="2"]{order:1}
+.podium [data-place="3"]{order:3}
+.podium .card{margin-bottom:clamp(40px,5vw,64px)}
+@media (max-width:1000px){.podium{gap:24px 36px}}
+@media (max-width:720px){
+  .podium{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 22px;padding:16px 0 18px}
+  .podium [data-place="1"]{order:1;grid-column:1/-1;justify-self:center;width:62%;transform:none}
+  .podium [data-place="2"]{order:2}
+  .podium [data-place="3"]{order:3}
+}
+
+/* Khung của ban tổ chức (frames/topN.webp) đặt đè mép dưới ảnh, rộng hơn thẻ */
+.card.framed{container-type:inline-size}
+/* Mã dự thi của Top 3 cùng màu khung: vàng kim · bạc · đồng */
+.card.w1 .badge{background:linear-gradient(135deg,#fff1b8,#f2c230 55%,#b8860b);color:#4a3200}
+.card.w2 .badge{background:linear-gradient(135deg,#ffffff,#d5dde7 55%,#8f9cad);color:#283444}
+.card.w3 .badge{background:linear-gradient(135deg,#ffd9b8,#e08a4e 55%,#9a4f1e);color:#3e1a05}
+.card.w1 .badge,.card.w2 .badge,.card.w3 .badge{box-shadow:0 1px 4px rgba(0,0,0,.25)}
+/* đặt ở chân khung: nửa trên nằm trong thẻ (dưới nút bình chọn), nửa dưới thò ra ngoài mép dưới */
+.fr-badge{position:absolute;left:-9cqw;width:118cqw;max-width:none;top:auto;bottom:-22cqw;height:auto;filter:drop-shadow(0 4px 10px rgba(60,30,0,.35))}
+.card.framed .ci{padding-bottom:29cqw}
+.card.framed{margin-bottom:clamp(40px,5vw,64px)!important}
+.card.framed{overflow:visible;margin-bottom:20px;box-shadow:0 0 22px var(--fglow2,rgba(0,0,0,.15)),0 12px 30px rgba(80,20,30,.18)}
+.card.framed.w1{--fglow2:rgba(255,200,60,.55)}.card.framed.w2{--fglow2:rgba(200,215,235,.65)}.card.framed.w3{--fglow2:rgba(230,140,80,.5)}
+.card.framed .thumb{border-radius:var(--r) var(--r) 0 0}
+.card.framed .rank{display:none}
+.frame{position:absolute;inset:0;z-index:4;pointer-events:none;filter:drop-shadow(0 0 6px var(--fglow))}
+.frame svg{position:absolute;overflow:visible}
+.fr-border{inset:0;width:100%;height:100%}
+.fr-top{left:50%;top:-30px;width:46%;max-width:150px;transform:translateX(-50%)}
+.fr-bottom{left:50%;bottom:-30px;width:64%;max-width:200px;transform:translateX(-50%)}
+.fr-wing{top:16%;height:46%;width:auto}
+.fr-wing.l{left:-15px}
+.fr-wing.r{right:-15px;transform:scaleX(-1)}
+@media (max-width:720px){.fr-top{top:-22px}.fr-bottom{bottom:-22px}.fr-wing.l{left:-9px}.fr-wing.r{right:-9px}.card.framed{margin-bottom:14px}}
+
 /* Pháo hoa sau khi khóa bình chọn */
 .fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .hero > .fx{z-index:0}
@@ -140,7 +181,10 @@ main{padding-block:28px 48px}
 /* grid */
 .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:22px}
 @media (max-width:1000px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media (max-width:720px){.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}}
+@media (max-width:720px){.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+  /* tên dài xuống 2 dòng, tên ngắn vẫn chừa đủ 2 dòng → mọi thẻ cao bằng nhau */
+  .ci h3{min-height:2.6em;display:flex;align-items:center;justify-content:center}
+  .vote{white-space:nowrap;padding:6px 10px;font-size:13px;gap:6px}}
 .card{background:var(--card);border-radius:var(--r);overflow:hidden;box-shadow:0 1px 2px rgba(80,20,30,.06),0 8px 24px rgba(80,20,30,.06);display:flex;flex-direction:column;position:relative;transition:transform .2s,box-shadow .2s}
 .card:hover{transform:translateY(-3px);box-shadow:0 12px 30px rgba(80,20,30,.14)}
 .card.mine{outline:3px solid var(--gold)}

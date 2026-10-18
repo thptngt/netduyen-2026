@@ -97,7 +97,7 @@ function renderGrid() {
   let list = T.filter(t => !q || [t.code, t.name, t.cls].join(" ").toLowerCase().includes(q));
   if ($("#sort").value === "votes") list = [...list].sort((a, b) => (S.counts[b.code] || 0) - (S.counts[a.code] || 0));
   const rk = rankMap();
-  $("#grid").innerHTML = list.length ? list.map(t => {
+  const card = t => {
     const mine = S.mine.has(t.code), n = S.counts[t.code];
     return `<article class="card${mine ? " mine" : ""}${t.name ? "" : " empty"}${phase() === "after" && rk[t.code] ? " winner w" + rk[t.code] : ""}" data-code="${t.code}">
       <button class="thumb" data-open="${t.code}" aria-label="Xem bài dự thi ${esc(label(t))}">
@@ -109,7 +109,17 @@ function renderGrid() {
         <p class="sub">${t.cls ? "GVCN lớp " + esc(t.cls) : "&nbsp;"}</p>
         <div class="row"><button class="vote${mine ? " on" : ""}" data-vote="${t.code}" ${t.name && phase() === "open" ? "" : "disabled"}><b>${fmt(n)}</b> ${voteLabel(t.code)}</button></div>
       </div></article>`;
-  }).join("") : `<p style="grid-column:1/-1;text-align:center;color:var(--muted)">Không tìm thấy thí sinh phù hợp.</p>`;
+  };
+  // Sau khi khóa bình chọn (và không đang tìm kiếm): Top 3 lên hàng riêng phía trên, 15 cô còn lại xếp bên dưới.
+  // Máy tính: bục vinh danh 2 – 1 – 3 (Top 1 ở giữa, cao hơn). Điện thoại: Top 1 hàng đầu, Top 2 và Top 3 hàng thứ hai.
+  const top = Object.keys(rk).sort((a, b) => rk[a] - rk[b]).map(c => T.find(t => t.code === c));
+  if (phase() === "after" && !q && top.length === 3) {
+    const rest = list.filter(t => !rk[t.code]);
+    $("#grid").innerHTML = `<section class="podium" aria-label="Top 3 bình chọn nhiều nhất">${top.map((t, i) => card(t).replace('<article class="card', `<article data-place="${i + 1}" class="card`)).join("")}</section>` + rest.map(card).join("");
+  } else {
+    $("#grid").innerHTML = list.length ? list.map(card).join("") : `<p style="grid-column:1/-1;text-align:center;color:var(--muted)">Không tìm thấy thí sinh phù hợp.</p>`;
+  }
+  attachFrames();
   celebrate();
 }
 
@@ -151,9 +161,11 @@ class Fireworks {
     for (let i = 0; i < k; i++) setTimeout(() => this.alive && this.launch(), i * (120 + Math.random() * 260));
   }
   launch() {
-    const s = Math.max(.6, Math.min(1.4, Math.sqrt(this.h / 300))) * this.o.size;
-    this.r.push({ x: this.w * (.12 + Math.random() * .76), y: this.h + 4, vx: (Math.random() - .5) * 1.2,
-      vy: -(5.2 + Math.random() * 1.8) * s, ty: this.h * (.12 + Math.random() * .38), s });
+    const s = Math.max(.35, Math.min(1.4, Math.min(this.w, this.h) / 320)) * this.o.size; // độ bung tỷ lệ theo khung (thẻ nhỏ trên điện thoại bung nhỏ)
+    const ty = this.h * (.12 + Math.random() * .38);
+    // tốc độ bay đủ để lên tới độ cao nổ ty (trọng lực .06/khung), không phụ thuộc kích thước khung
+    this.r.push({ x: this.w * (.12 + Math.random() * .76), y: this.h + 4, vx: (Math.random() - .5) * 1.2 * s,
+      vy: -Math.sqrt(2 * .06 * (this.h + 4 - ty)) * 1.08, ty, s });
   }
   explode(rk) {
     const type = Math.random(), s = rk.s, col = this.pick();
@@ -199,6 +211,54 @@ class Fireworks {
   }
   stop() { this.alive = false; this.ro.disconnect(); this.c.remove(); }
 }
+/* ---------------- khung vinh danh Top 3 (tùy chọn) ----------------
+   Khung kim loại kiểu huy hiệu: viền đôi, vương miện có đá quý phía trên, cánh hai bên ảnh, dải "TOP n" phía dưới.
+   Vàng kim (Top 1) · Bạc (Top 2) · Đồng (Top 3).
+   ĐANG BẬT trên web thật (FRAME_ON = true). Xem thử trên máy: ?xemthu=ketthuc&khung=1 */
+const FRAME_ON = true;
+const SHOW_FRAMES = FRAME_ON || (PREVIEW_END && /[?&]khung=1/.test(location.search));
+const METAL = {
+  1: { s: ["#fff7cf", "#f6d365", "#c8961e", "#ffe592", "#8a5b06"], gem: "#ff5a76", glow: "rgba(255,200,60,.55)" },
+  2: { s: ["#ffffff", "#e3eaf2", "#9aa8b8", "#f4f7fb", "#5d6b7c"], gem: "#7fd6ff", glow: "rgba(210,225,245,.6)" },
+  3: { s: ["#ffe3c7", "#e9a06a", "#a5571f", "#f6bc8a", "#5f2d0b"], gem: "#ffb347", glow: "rgba(230,140,80,.5)" },
+};
+function frameHTML(rk) {
+  const m = METAL[rk], g = `fm${rk}`;
+  const grad = `<defs><linearGradient id="${g}" x1="0" y1="0" x2="1" y2="1">${m.s.map((c, i) => `<stop offset="${i / (m.s.length - 1)}" stop-color="${c}"/>`).join("")}</linearGradient>
+    <linearGradient id="${g}v" x1="0" y1="0" x2="0" y2="1">${m.s.map((c, i) => `<stop offset="${i / (m.s.length - 1)}" stop-color="${c}"/>`).join("")}</linearGradient></defs>`;
+  return `<div class="frame f${rk}" aria-hidden="true" style="--fglow:${m.glow}">
+    <svg class="fr-border" viewBox="0 0 100 100" preserveAspectRatio="none">${grad}
+      <rect x="1.2" y="1" width="97.6" height="98" rx="4" fill="none" stroke="url(#${g})" stroke-width="4" vector-effect="non-scaling-stroke"/>
+      <rect x="3.2" y="2.6" width="93.6" height="94.8" rx="3" fill="none" stroke="url(#${g}v)" stroke-width="1.2" vector-effect="non-scaling-stroke" opacity=".85"/></svg>
+    <img class="fr-badge" src="frames/top${rk}.webp?v=1" alt="" width="800" height="330">
+  </div>`;
+  /* (Mẫu trang trí tự vẽ cũ — không dùng nữa, giữ lại để tham khảo)
+    <svg class="fr-top" viewBox="0 0 160 64">${grad}
+      <path d="M80 4 L92 26 L114 14 L106 38 L140 30 L118 52 L80 46 L42 52 L20 30 L54 38 L46 14 L68 26 Z" fill="url(#${g})" stroke="${m.s[4]}" stroke-width="1.5" stroke-linejoin="round"/>
+      <path d="M80 14 L88 30 L80 40 L72 30 Z" fill="${m.gem}" stroke="#fff" stroke-width="1.2"/>
+      <circle cx="80" cy="27" r="3" fill="#fff" opacity=".85"/>
+      <path d="M8 56 Q44 44 80 52 Q116 44 152 56 L150 60 Q116 50 80 58 Q44 50 10 60 Z" fill="url(#${g}v)" stroke="${m.s[4]}" stroke-width="1"/></svg>
+    <svg class="fr-wing l" viewBox="0 0 40 120">${grad}
+      <path d="M36 6 C14 20 6 44 10 62 C14 82 24 98 36 114 C22 110 4 92 2 64 C0 36 16 14 36 6 Z" fill="url(#${g}v)" stroke="${m.s[4]}" stroke-width="1.2"/>
+      <path d="M30 26 C18 38 16 52 18 64 M30 92 C22 84 18 76 18 66" fill="none" stroke="${m.s[0]}" stroke-width="1.4" opacity=".8"/></svg>
+    <svg class="fr-wing r" viewBox="0 0 40 120">${grad}
+      <path d="M36 6 C14 20 6 44 10 62 C14 82 24 98 36 114 C22 110 4 92 2 64 C0 36 16 14 36 6 Z" fill="url(#${g}v)" stroke="${m.s[4]}" stroke-width="1.2"/>
+      <path d="M30 26 C18 38 16 52 18 64 M30 92 C22 84 18 76 18 66" fill="none" stroke="${m.s[0]}" stroke-width="1.4" opacity=".8"/></svg>
+    <svg class="fr-bottom" viewBox="0 0 200 60">${grad}
+      <path d="M10 18 L56 30 L76 10 L100 22 L124 10 L144 30 L190 18 L168 44 L132 40 L100 56 L68 40 L32 44 Z" fill="url(#${g})" stroke="${m.s[4]}" stroke-width="1.5" stroke-linejoin="round"/>
+      <rect x="64" y="22" width="72" height="20" rx="10" fill="${m.s[4]}" stroke="url(#${g}v)" stroke-width="2"/>
+      <text x="100" y="37" text-anchor="middle" font-family="Montserrat,Arial,sans-serif" font-weight="800" font-size="13" fill="${m.s[0]}" letter-spacing="1.5">TOP ${rk}</text></svg>
+  */
+}
+function attachFrames() {
+  if (!SHOW_FRAMES || phase() !== "after") return;
+  for (const card of document.querySelectorAll(".card.winner")) {
+    if (card.querySelector(".frame")) continue;
+    const rk = card.classList.contains("w1") ? 1 : card.classList.contains("w2") ? 2 : 3;
+    card.classList.add("framed"); card.insertAdjacentHTML("beforeend", frameHTML(rk));
+  }
+}
+
 let heroFx = null, cardFx = [], sortedOnce = false;
 function celebrate() {
   const ended = phase() === "after" && S.known && !reduceMotion;
@@ -206,6 +266,7 @@ function celebrate() {
   if (!ended) { if (heroFx) { heroFx.stop(); heroFx = null; $(".hero").classList.remove("night"); } return; }
   if (!sortedOnce) { sortedOnce = true; if ($("#sort").value !== "votes") { $("#sort").value = "votes"; return renderGrid(); } }
   if (!heroFx) heroFx = new Fireworks($(".hero"), FX_COLORS.hero, { every: 1300, salvo: [2, 4], size: 1 }); $(".hero").classList.add("night");
+  attachFrames();
   for (const card of document.querySelectorAll(".card.winner")) {
     const rk = card.classList.contains("w1") ? 1 : card.classList.contains("w2") ? 2 : 3;
     cardFx.push(new Fireworks(card, FX_COLORS[rk], { every: rk === 1 ? 1300 : 1700, salvo: [1, 2], size: .8, fade: .2 }));
