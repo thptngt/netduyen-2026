@@ -184,22 +184,32 @@ class Fireworks {
   tick(now) {
     if (!this.alive) return;
     requestAnimationFrame(this.tick);
-    if (document.hidden) return;
+    if (document.hidden) { this.prev = null; return; }
+    // Chuyển động tính theo thời gian thật: luôn 60 bước/giây, màn hình 90/120/144 Hz không làm pháo bay nhanh hơn
+    const STEP = 1000 / 60;
+    this.acc = Math.min((this.acc || 0) + (this.prev == null ? STEP : now - this.prev), STEP * 4); this.prev = now;
+    const n = Math.floor(this.acc / STEP);
+    if (!n) return;                        // chưa đủ 1 bước: giữ nguyên khung hình
+    this.acc -= n * STEP;
     const x = this.x;
-    x.globalCompositeOperation = "destination-out"; x.globalAlpha = 1; x.fillStyle = `rgba(0,0,0,${this.o.fade})`; x.fillRect(0, 0, this.w, this.h); // để lại vệt sáng
+    x.globalCompositeOperation = "destination-out"; x.globalAlpha = 1; x.fillStyle = `rgba(0,0,0,${1 - Math.pow(1 - this.o.fade, n)})`; x.fillRect(0, 0, this.w, this.h); // để lại vệt sáng
     x.globalCompositeOperation = "lighter";                                                                                            // ánh sáng cộng dồn như pháo thật
     if (now - this.last > this.o.every * (.6 + Math.random() * .8)) { this.last = now; this.salvo(); }
-    // pháo đang bay lên + tàn lửa đuôi
-    for (let i = this.r.length - 1; i >= 0; i--) {
-      const r = this.r[i]; r.x += r.vx; r.y += r.vy; r.vy += .06;
-      x.globalAlpha = 1; x.fillStyle = "#fff4d6"; x.beginPath(); x.arc(r.x, r.y, 1.6, 0, 6.283); x.fill();
-      if (Math.random() < .8) this.p.push({ x: r.x, y: r.y + 2, vx: (Math.random() - .5) * .6, vy: Math.random() * .8, life: .5, decay: .05, col: "#ffcf8a", drag: .95, g: .02, sz: 1 });
-      if (r.y <= r.ty || r.vy >= -.5) { this.explode(r); this.r.splice(i, 1); }
+    for (let k = 0; k < n; k++) {
+      // pháo đang bay lên + tàn lửa đuôi
+      for (let i = this.r.length - 1; i >= 0; i--) {
+        const r = this.r[i]; r.x += r.vx; r.y += r.vy; r.vy += .06;
+        if (Math.random() < .8) this.p.push({ x: r.x, y: r.y + 2, vx: (Math.random() - .5) * .6, vy: Math.random() * .8, life: .5, decay: .05, col: "#ffcf8a", drag: .95, g: .02, sz: 1 });
+        if (r.y <= r.ty || r.vy >= -.5) { this.explode(r); this.r.splice(i, 1); }
+      }
+      for (let i = this.p.length - 1; i >= 0; i--) {
+        const p = this.p[i]; p.vx *= p.drag; p.vy = p.vy * p.drag + p.g; p.x += p.vx; p.y += p.vy; p.life -= p.decay;
+        if (p.life <= 0) this.p.splice(i, 1);
+      }
     }
+    for (const r of this.r) { x.globalAlpha = 1; x.fillStyle = "#fff4d6"; x.beginPath(); x.arc(r.x, r.y, 1.6, 0, 6.283); x.fill(); }
     // hạt pháo
-    for (let i = this.p.length - 1; i >= 0; i--) {
-      const p = this.p[i]; p.vx *= p.drag; p.vy = p.vy * p.drag + p.g; p.x += p.vx; p.y += p.vy; p.life -= p.decay;
-      if (p.life <= 0) { this.p.splice(i, 1); continue; }
+    for (const p of this.p) {
       let a = Math.min(1, p.life * 1.6);
       if (p.glitter) a *= Math.random() < .35 ? 1 : .25;                        // liễu vàng nhấp nháy
       else if (p.life < .35) a *= .5 + .5 * Math.sin(now / 45 + p.ph);           // lấp lánh khi tàn
