@@ -199,17 +199,17 @@ let pendingVote = null;
 function emailOk(u) {
   if (DEMO) return true;
   const e = (u?.email || "").toLowerCase();
-  return /@gmail\.com$/.test(e) || /\.edu\.vn$/.test(e);
+  return /@gmail\.com$/.test(e) || /@hanoiedu\.vn$/.test(e) || /\.edu\.vn$/.test(e);
 }
 function showEmailBanner() {
-  banner(`Tài khoản <b>${esc(S.user?.email || "")}</b> không được chấp nhận. Cuộc bình chọn chỉ nhận tài khoản <b>@gmail.com</b> hoặc email trường học đuôi <b>.edu.vn</b>. Bấm <b>Đăng xuất</b> rồi đăng nhập lại bằng tài khoản phù hợp.`, true);
+  banner(`Tài khoản <b>${esc(S.user?.email || "")}</b> không được chấp nhận. Cuộc bình chọn chỉ nhận tài khoản <b>@gmail.com</b>, <b>@hanoiedu.vn</b> hoặc email trường học đuôi <b>.edu.vn</b>. Bấm <b>Đăng xuất</b> rồi đăng nhập lại bằng tài khoản phù hợp.`, true);
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 async function vote(code) {
   const t = T.find(x => x.code === code); if (!t?.name) return;
   if (!S.user) { pendingVote = code; toast("Đăng nhập Google để bình chọn"); return signIn(); }
   if (phase() !== "open") return toast(phase() === "before" ? "Chưa đến thời gian bình chọn." : "Cuộc bình chọn đã kết thúc.");
-  if (!emailOk(S.user)) { showEmailBanner(); return toast("Chỉ nhận tài khoản @gmail.com hoặc email đuôi .edu.vn."); }
+  if (!emailOk(S.user)) { showEmailBanner(); return toast("Chỉ nhận tài khoản @gmail.com, @hanoiedu.vn hoặc email đuôi .edu.vn."); }
   if (S.mine.has(code)) return toast(`Bạn đã bình chọn cho cô ${t.name} rồi. Mỗi cô chỉ được chọn 1 lần.`);
   if (S.busy.has(code)) return; S.busy.add(code);
   try {
